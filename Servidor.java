@@ -101,6 +101,14 @@ public class Servidor {
             String requisicao = entrada.hasNextLine() ? entrada.nextLine() : "";
             System.out.println("[SERVIDOR] Requisicao recebida de " + endereco + ": " + requisicao);
 
+            // Navegadores mandam "GET / HTTP/1.1" + headers; o Cliente.java manda uma linha simples.
+            boolean isHttp = requisicao.matches("^(GET|POST|HEAD|PUT|DELETE|OPTIONS) .* HTTP/\\d\\.\\d$");
+            if (isHttp) {
+                while (entrada.hasNextLine() && !entrada.nextLine().isEmpty()) {
+                    // descarta os headers HTTP restantes
+                }
+            }
+
             LeitorA leitor = new LeitorA();
             EscritorB escritor = new EscritorB(endereco);
             leitor.start();
@@ -120,7 +128,22 @@ public class Servidor {
                         + " caracteres.";
             }
 
-            saida.println(resposta);
+            if (isHttp) {
+                String corpo = "Servidor Sistemas Distribuidos - aula05" + System.lineSeparator()
+                        + "PID: " + ProcessHandle.current().pid() + System.lineSeparator()
+                        + "Cliente: " + endereco + System.lineSeparator()
+                        + resposta + System.lineSeparator();
+                byte[] corpoBytes = corpo.getBytes(StandardCharsets.UTF_8);
+                saida.print("HTTP/1.1 200 OK\r\n");
+                saida.print("Content-Type: text/plain; charset=utf-8\r\n");
+                saida.print("Content-Length: " + corpoBytes.length + "\r\n");
+                saida.print("Connection: close\r\n");
+                saida.print("\r\n");
+                saida.print(corpo);
+                saida.flush();
+            } else {
+                saida.println(resposta);
+            }
             System.out.println("[SERVIDOR] Resposta enviada para " + endereco + ": " + resposta);
         } catch (IOException | InterruptedException e) {
             System.out.println("[SERVIDOR] Erro ao tratar " + endereco + ": " + e);
