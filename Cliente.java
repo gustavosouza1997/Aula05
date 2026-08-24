@@ -13,11 +13,14 @@ import java.util.Scanner;
  */
 public class Cliente {
 
-    private static final String HOST = "127.0.0.1";
-    private static final int PORTA = 5000;
+    private static final String HOST_PADRAO = "127.0.0.1";
+    private static final int PORTA_PADRAO = 5000;
 
     public static void main(String[] args) {
-        try (Socket socket = new Socket(HOST, PORTA)) {
+        String host = args.length > 0 ? args[0] : HOST_PADRAO;
+        int porta = args.length > 1 ? Integer.parseInt(args[1]) : PORTA_PADRAO;
+
+        try (Socket socket = new Socket(host, porta)) {
             PrintWriter saida = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
             Scanner entrada = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
 
